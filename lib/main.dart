@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:manager_store/pages/product_add.dart';
+import 'package:manager_store/pages/index.dart';
 
 import 'package:manager_store/pages/product_page.dart';
 
@@ -14,12 +14,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
+
       home: MainScreen(),
     );
   }
 }
 
-// 1. Đổi sang StatefulWidget để lưu vị trí Tab đang chọn
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -28,44 +28,50 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // Biến lưu vị trí tab hiện tại
   int _currentIndex = 0;
 
-  // Danh sách các màn hình tương ứng với từng tab
-  final List<Widget> _pages = const [
-    Center(child: Text('Trang chủ', style: TextStyle(fontSize: 24))),
-    ProductPage(),
-    AddProductScreen(),
-  ];
+  // Hàm hỗ trợ chuyển về tab Danh sách sản phẩm (Tab 1)
+  void _switchToListTab() {
+    FocusManager.instance.primaryFocus?.unfocus(); // Ẩn bàn phím an toàn
+    setState(() {
+      _currentIndex = 1; // Chuyển sang Tab "Danh sách / Tìm kiếm"
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ứng dụng của tôi'), centerTitle: true),
-      // 2. Hiển thị màn hình theo chỉ số _currentIndex
-      body: _pages[_currentIndex],
+    // Khai báo danh sách trang bên trong build() để truyền Callback thành công
+    final List<Widget> pages = [
+      const SearchProductScreen(),
 
-      // 3. Sử dụng bottomNavigationBar thay cho TabBar ở trên
+      // Tab 1: Màn hình Danh sách sản phẩm
+      const ProductListScreen(),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Ứng dụng quản lý'), centerTitle: true),
+
+      // Sử dụng IndexedStack để giữ nguyên trạng thái UI và tránh destroy View Surface của Android
+      body: IndexedStack(index: _currentIndex, children: pages),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          FocusManager.instance.primaryFocus
+              ?.unfocus(); // Tắt bàn phím khi bấm đổi tab
           setState(() {
-            _currentIndex = index; // Cập nhật trạng thái khi chuyển tab
+            _currentIndex = index;
           });
         },
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.record_voice_over),
-            label: 'Tìm kiếm',
+            icon: Icon(Icons.inventory_2_outlined),
+            label: 'Sản phẩm',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.today_outlined),
-            label: 'Todo',
-          ),
-          // BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Bài viết'),
         ],
       ),
     );
